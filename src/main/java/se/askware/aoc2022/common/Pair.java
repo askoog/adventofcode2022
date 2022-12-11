@@ -1,5 +1,6 @@
 package se.askware.aoc2022.common;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -38,5 +39,39 @@ public class Pair<T> {
 
 	public Pair<T> flip(){
 		return new Pair(second, first);
+	}
+
+	public Pair<T> update(T first, T second){
+		return new Pair<>(first,second);
+	}
+
+	public T getFirst() {
+		return first;
+	}
+
+	public T getSecond() {
+		return second;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		final Pair<?> pair = (Pair<?>) o;
+		return Objects.equals(first, pair.first) && Objects.equals(second, pair.second);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(first, second);
+	}
+
+	@Override
+	public String toString() {
+		return first +  "," + second;
 	}
 }
