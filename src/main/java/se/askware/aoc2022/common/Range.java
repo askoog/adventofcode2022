@@ -2,8 +2,8 @@ package se.askware.aoc2022.common;
 
 public class Range {
 
-	int start;
-	int end;
+	public int start;
+	public int end;
 
 	public Range(int start, int end) {
 		this.start = start;
@@ -24,5 +24,21 @@ public class Range {
 				(end >= other.start && end <= other.end) ||
 				(other.start >= start && other.start <= end) ||
 				(other.end >= start && other.end <= end);
+	}
+
+	public boolean covers(Range other){
+		return start <= other.start && end >= other.end;
+	}
+
+	public Range merge(Range r1, Range r2){
+		return new Range(Math.min(r1.start, r2.start), Math.max(r1.end,r2.end));
+	}
+
+	@Override
+	public String toString() {
+		return "Range{" +
+				"start=" + start +
+				", end=" + end +
+				'}';
 	}
 }

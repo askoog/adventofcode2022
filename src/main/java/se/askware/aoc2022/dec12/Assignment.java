@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import se.askware.aoc2022.common.AocBase;
 import se.askware.aoc2022.common.Cell;
+import se.askware.aoc2022.common.CharCell;
 import se.askware.aoc2022.common.Grid;
 
 public class Assignment extends AocBase {
@@ -18,31 +19,18 @@ public class Assignment extends AocBase {
 		new Assignment().run();
 	}
 
-	private static class Pos extends Cell {
-		char value;
-		boolean seen;
 
-		public Pos(char value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return row + "," + col + " : " + value;
-		}
-
-	}
 
 	@Override
 	public void solvePartOne(List<String> input) {
-		final Grid<Pos> grid = Grid.init(input, (p, c) -> new Pos(c));
+		final Grid<CharCell> grid = Grid.init(input, (p, c) -> new CharCell(c));
 
-		final Pos start = grid.getAll().filter(c -> c.value == 'S').findFirst().get();
+		final CharCell start = grid.findFirst(c -> c.value == 'S').get();
 		start.value = 'a';
-		final Pos end = grid.getAll().filter(c -> c.value == 'E').findFirst().get();
+		final CharCell end = grid.findFirst(c -> c.value == 'E').get();
 		end.value = 'z';
 
-		final List<Pos> best = grid.findPathXY(start, end, (last, next) -> next.value - last.value <= 1);
+		final List<CharCell> best = grid.findPathXY(start, end, (last, next) -> next.value - last.value <= 1);
 
 		System.out.println(best.size() - 1);
 
@@ -50,14 +38,14 @@ public class Assignment extends AocBase {
 
 	@Override
 	public void solvePartTwo(List<String> input) {
-		final Grid<Pos> grid = Grid.init(input, (p, c) -> new Pos(c));
+		final Grid<CharCell> grid = Grid.init(input, (p, c) -> new CharCell(c));
 
-		final Pos start = grid.getAll().filter(c -> c.value == 'S').findFirst().get();
+		final CharCell start = grid.findFirst(c -> c.value == 'S').get();
 		start.value = 'a';
-		final Pos end = grid.getAll().filter(c -> c.value == 'E').findFirst().get();
+		final CharCell end = grid.findFirst(c -> c.value == 'E').get();
 		end.value = 'z';
 
-		List<Pos> allA = grid.getAll().filter(c -> c.value == 'a').collect(Collectors.toList());
+		List<CharCell> allA = grid.getAll().filter(c -> c.value == 'a').collect(Collectors.toList());
 
 		int minPath = allA.stream()
 				.map(a -> grid.findPathXY(a, end, (last, next) -> next.value - last.value <= 1))

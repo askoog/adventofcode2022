@@ -36,4 +36,8 @@ public class XYPair extends Pair<Integer>{
 	public boolean equals(Object o) {
 		return super.equals(o);
 	}
+
+	public XYPair translate(int x, int y){
+		return new XYPair(first + x, second + y);
+	}
 }

@@ -1,9 +1,11 @@
 package se.askware.aoc2022.common;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -28,6 +30,12 @@ public class Grid<T extends Cell> {
 		}
 	}
 
+	public static Grid<CharCell> charGrid(int rows, int columns, BiFunction<Integer,Integer, Character> initiator) {
+		Grid<CharCell> grid = new Grid<>(rows, columns);
+		grid.init((row,col) -> new CharCell(initiator.apply(row,col)));
+		return grid;
+	}
+
 	/**
 	 * Initiate a grid from input lines. Assumes all lines in input has the same length. For each character in the input, a cell will be created
 	 * @param input input data
@@ -42,6 +50,13 @@ public class Grid<T extends Cell> {
 	}
 
 
+	public int getNumRows(){
+		return cells.length;
+	}
+
+	public int getNumColumns(){
+		return cells[0].length;
+	}
 
 	public List<T> getRow(int row) {
 		return (List<T>) Arrays.asList(cells[row]);
@@ -67,14 +82,27 @@ public class Grid<T extends Cell> {
 		}
 	}
 
-	public T getCell(int x, int y) {
-		return (T) cells[x][y];
+	public T getCell(int row, int col) {
+		return (T) cells[row][col];
 	}
 
-	public void setCell(Cell cell, int row, int columns) {
-		cells[row][columns] = cell;
+	public T getCell(GridPos pos) {
+		return (T) cells[pos.getRow()][pos.getCol()];
+	}
+
+	public Optional<T> getOptionalCell(GridPos pos) {
+		return getOptionalCell(pos.getRow(), pos.getCol());
+	}
+	public Optional<T> getOptionalCell(int row, int col) {
+		if (row < 0 ||row >= cells.length ||col >= cells[0].length ||col < 0){
+			return Optional.empty();
+		}
+		return Optional.of((T) cells[row][col]);
+	}
+ 	public void setCell(Cell cell, int row, int col) {
+		cells[row][col] = cell;
 		cell.row = row;
-		cell.col = columns;
+		cell.col = col;
 	}
 
 	public List<T> getAllNeighbors(Cell cell) {
@@ -113,15 +141,32 @@ public class Grid<T extends Cell> {
 
 	}
 
-	public void print() {
-		for (int i = 0; i < cells.length; i++) {
-			for (int j = 0; j < cells[i].length; j++) {
-				System.out.print(getCell(i, j).print());
-			}
-			System.out.println();
-		}
-		System.out.println();
+	public void print(BiPredicate<Integer, Integer> test) {
+		print(test, System.out);
+	}
 
+	public void print(BiPredicate<Integer, Integer> test, PrintStream out) {
+		for (int i = 0; i < cells.length; i++) {
+			boolean visible = false;
+			for (int j = 0; j < cells[i].length; j++) {
+				if (test.test(i,j)){
+					visible = true;
+					out.print(getCell(i, j).print());
+				}
+			}
+			if (visible) {
+				out.println();
+			}
+		}
+		out.println();
+
+	}
+	public void print() {
+		print((i,j) -> true);
+	}
+
+	public Optional<T> findFirst(Predicate<T> test){
+		return getAll().filter(test).findFirst();
 	}
 
 	public List<T> findPathXY(T start, T end, BiPredicate<T,T> allowedToEnterPredicate){

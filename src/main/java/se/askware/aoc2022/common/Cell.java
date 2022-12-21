@@ -11,8 +11,8 @@ public class Cell {
 		return "?";
 	}
 
-	public Pair<Integer> pos(){
-		return new Pair<>(row,col);
+	public GridPos pos(){
+		return new GridPos(row,col);
 	}
 
 	@Override
