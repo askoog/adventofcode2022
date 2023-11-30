@@ -17,4 +17,6 @@ public class GridPos extends Pair<Integer> {
 	public GridPos translate(GridPos other){
 		return new GridPos(getRow() + other.getRow(), getCol() + other.getCol());
 	}
+
+
 }

@@ -13,7 +13,7 @@ import se.askware.aoc2022.common.AocBase;
 public class Assignment extends AocBase {
 
 	public static void main(String[] args) throws IOException {
-		new Assignment2().run();
+		new Assignment().run();
 	}
 
 	private static class Item {

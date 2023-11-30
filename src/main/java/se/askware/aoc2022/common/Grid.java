@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -29,32 +30,35 @@ public class Grid<T extends Cell> {
 			}
 		}
 	}
+	public static Grid<CharCell> charGrid(List<String> input) {
+		return charGrid(input.size(),input.get(0).length(), (row,col) -> input.get(row).charAt(col));
+	}
 
-	public static Grid<CharCell> charGrid(int rows, int columns, BiFunction<Integer,Integer, Character> initiator) {
+	public static Grid<CharCell> charGrid(int rows, int columns, BiFunction<Integer, Integer, Character> initiator) {
 		Grid<CharCell> grid = new Grid<>(rows, columns);
-		grid.init((row,col) -> new CharCell(initiator.apply(row,col)));
+		grid.init((row, col) -> new CharCell(initiator.apply(row, col)));
 		return grid;
 	}
 
 	/**
 	 * Initiate a grid from input lines. Assumes all lines in input has the same length. For each character in the input, a cell will be created
-	 * @param input input data
+	 *
+	 * @param input     input data
 	 * @param initiator callback for creating the cell at a given pos with the character at row,col
-	 * @return an initiated grid
 	 * @param <T>
+	 * @return an initiated grid
 	 */
 	public static <T extends Cell> Grid<T> init(List<String> input, BiFunction<Pair<Integer>, Character, T> initiator) {
 		Grid<T> grid = new Grid<>(input.size(), input.get(0).length());
-		grid.init((row,col) -> initiator.apply(new Pair<>(row,col), input.get(row).charAt(col)));
+		grid.init((row, col) -> initiator.apply(new Pair<>(row, col), input.get(row).charAt(col)));
 		return grid;
 	}
 
-
-	public int getNumRows(){
+	public int getNumRows() {
 		return cells.length;
 	}
 
-	public int getNumColumns(){
+	public int getNumColumns() {
 		return cells[0].length;
 	}
 
@@ -93,23 +97,29 @@ public class Grid<T extends Cell> {
 	public Optional<T> getOptionalCell(GridPos pos) {
 		return getOptionalCell(pos.getRow(), pos.getCol());
 	}
+
 	public Optional<T> getOptionalCell(int row, int col) {
-		if (row < 0 ||row >= cells.length ||col >= cells[0].length ||col < 0){
+		if (row < 0 || row >= cells.length || col >= cells[0].length || col < 0) {
 			return Optional.empty();
 		}
 		return Optional.of((T) cells[row][col]);
 	}
- 	public void setCell(Cell cell, int row, int col) {
+
+	public void setCell(Cell cell, int row, int col) {
 		cells[row][col] = cell;
 		cell.row = row;
 		cell.col = col;
 	}
 
 	public List<T> getAllNeighbors(Cell cell) {
+		return getAllNeighbors(cell.pos());
+	}
+
+	public List<T> getAllNeighbors(GridPos cell) {
 		List<T> neighbors = new ArrayList<>();
-		for (int i = Math.max(cell.row - 1, 0); i < Math.min(cell.row + 2, cells.length); i++) {
-			for (int j = Math.max(cell.col - 1, 0); j < Math.min(cell.col + 2, cells[i].length); j++) {
-				if (cells[i][j] != cell) {
+		for (int i = Math.max(cell.getRow() - 1, 0); i < Math.min(cell.getRow() + 2, cells.length); i++) {
+			for (int j = Math.max(cell.getCol() - 1, 0); j < Math.min(cell.getCol() + 2, cells[i].length); j++) {
+				if (!cells[i][j].pos().equals(cell)) {
 					neighbors.add((T) cells[i][j]);
 				}
 			}
@@ -120,19 +130,18 @@ public class Grid<T extends Cell> {
 	}
 
 	public List<T> getXYNeighbors(Cell cell) {
-		List<T> neighbors = new ArrayList<>();
-		for (int i = Math.max(cell.row - 1, 0); i < Math.min(cell.row + 2, cells.length); i++) {
-			if (cells[i][cell.col] != cell) {
-				neighbors.add((T) cells[i][cell.col]);
-			}
-		}
-		for (int j = Math.max(cell.col - 1, 0); j < Math.min(cell.col + 2, cells[0].length); j++) {
-			if (cells[cell.row][j] != cell) {
-				neighbors.add((T) cells[cell.row][j]);
-			}
-		}
-		//System.out.println(cell.x + "," + cell.y + " : " + cell.print() + " " + neighbors.size());
-		return neighbors;
+		return getXYNeighbors(cell.pos());
+	}
+
+	public List<T> getXYNeighbors(GridPos cell) {
+		return Stream.of(
+						getOptionalCell(cell.getRow() - 1, cell.getCol()),
+						getOptionalCell(cell.getRow() + 1, cell.getCol()),
+						getOptionalCell(cell.getRow(), cell.getCol() - 1),
+						getOptionalCell(cell.getRow(), cell.getCol() + 1))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toList());
 	}
 
 	public Stream<T> getAll() {
@@ -149,7 +158,7 @@ public class Grid<T extends Cell> {
 		for (int i = 0; i < cells.length; i++) {
 			boolean visible = false;
 			for (int j = 0; j < cells[i].length; j++) {
-				if (test.test(i,j)){
+				if (test.test(i, j)) {
 					visible = true;
 					out.print(getCell(i, j).print());
 				}
@@ -161,15 +170,16 @@ public class Grid<T extends Cell> {
 		out.println();
 
 	}
+
 	public void print() {
-		print((i,j) -> true);
+		print((i, j) -> true);
 	}
 
-	public Optional<T> findFirst(Predicate<T> test){
+	public Optional<T> findFirst(Predicate<T> test) {
 		return getAll().filter(test).findFirst();
 	}
 
-	public List<T> findPathXY(T start, T end, BiPredicate<T,T> allowedToEnterPredicate){
+	public List<T> findPathXY(T start, T end, BiPredicate<T, T> allowedToEnterPredicate) {
 		boolean[][] seen = new boolean[cells.length][cells[0].length];
 		Queue<List<T>> queue = new LinkedList<>();
 		queue.add(List.of(start));
